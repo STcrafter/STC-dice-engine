@@ -1,17 +1,21 @@
 {
-  "manifestVersion": "1.0",
   "name": "D&D Dice Engine",
   "version": "1.0.0",
-  "description": "A custom dice engine for D&D 5e with advantage, exploding dice, keep highest/lowest, and hidden GM rolls.",
+  "manifest_version": 1,
+  "description": "D&D 5e dice engine with advantage, exploding, keep highest/lowest, hidden rolls.",
   "author": "BetterDeepSeek",
-  "icon": "icon.svg",
-  "entry": "index.html",
-  "category": "dice",
-  "compatibility": {
-    "min": "2.0.0"
+  "icon": "/icon.svg",
+  "action": {
+    "title": "Dice Engine",
+    "icon": "/icon.svg",
+    "popover": "/index.html",
+    "height": 600,
+    "width": 400
   },
   "permissions": [
-    "OBR.player",
-    "OBR.room"
+    {
+      "name": "clipboard-write",
+      "reason": "Copy roll results"
+    }
   ]
 }
