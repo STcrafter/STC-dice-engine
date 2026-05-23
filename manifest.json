@@ -1,4 +1,5 @@
 {
+  "manifestVersion": "1.0",
   "name": "D&D Dice Engine",
   "version": "1.0.0",
   "description": "A custom dice engine for D&D 5e with advantage, exploding dice, keep highest/lowest, and hidden GM rolls.",
