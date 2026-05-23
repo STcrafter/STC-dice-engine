@@ -4,11 +4,11 @@
   "manifest_version": 1,
   "description": "D&D 5e dice engine",
   "author": "STCrafter",
-  "icon": "icon.svg",
+  "icon": "/icon.svg",
   "action": {
     "title": "Dice Engine",
-    "icon": "icon.svg",
-    "popover": "index.html",
+    "icon": "/icon.svg",
+    "popover": "/index.html",
     "height": 600,
     "width": 400
   },
