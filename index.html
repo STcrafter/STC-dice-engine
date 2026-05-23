@@ -180,7 +180,7 @@ body {
 </div>
 
 <script>
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
   // State
   var selectedDie = 20;
   var modifier = 0;
@@ -192,86 +192,76 @@ body {
   var hiddenRoll = false;
   var history = [];
 
-  // Wait for DOM
-  function init() {
-    var dieButtons = document.querySelectorAll('.die-btn');
-    var modifierInput = document.getElementById('modifier');
-    var advantageSelect = document.getElementById('advantage-select');
-    var explodingCheck = document.getElementById('exploding-check');
-    var keepCountInput = document.getElementById('keep-count');
-    var keepTypeSelect = document.getElementById('keep-type');
-    var keepTotalInput = document.getElementById('keep-total');
-    var hiddenCheck = document.getElementById('hidden-roll-check');
-    var rollButton = document.getElementById('roll-button');
-    var currentDieDisplay = document.getElementById('current-die-display');
-    var advantageRow = document.getElementById('advantage-row');
-    var clearHistoryBtn = document.getElementById('clear-history');
+  // DOM elements
+  var dieButtons = document.querySelectorAll('.die-btn');
+  var modifierInput = document.getElementById('modifier');
+  var advantageSelect = document.getElementById('advantage-select');
+  var explodingCheck = document.getElementById('exploding-check');
+  var keepCountInput = document.getElementById('keep-count');
+  var keepTypeSelect = document.getElementById('keep-type');
+  var keepTotalInput = document.getElementById('keep-total');
+  var hiddenCheck = document.getElementById('hidden-roll-check');
+  var rollButton = document.getElementById('roll-button');
+  var currentDieDisplay = document.getElementById('current-die-display');
+  var advantageRow = document.getElementById('advantage-row');
+  var clearHistoryBtn = document.getElementById('clear-history');
 
-    if (!rollButton) {
-      // DOM not ready yet, retry
-      setTimeout(init, 50);
-      return;
-    }
+  currentDieDisplay.textContent = 'd20';
 
-    currentDieDisplay.textContent = 'd20';
-
-    dieButtons.forEach(function(btn) {
-      btn.addEventListener('click', function() {
-        selectedDie = parseInt(btn.dataset.die);
-        currentDieDisplay.textContent = 'd' + selectedDie;
-        if (selectedDie === 20) {
-          advantageRow.style.display = 'flex';
-        } else {
-          advantageRow.style.display = 'none';
-          advantage = 'none';
-          advantageSelect.value = 'none';
-        }
-      });
+  dieButtons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      selectedDie = parseInt(btn.dataset.die);
+      currentDieDisplay.textContent = 'd' + selectedDie;
+      if (selectedDie === 20) {
+        advantageRow.style.display = 'flex';
+      } else {
+        advantageRow.style.display = 'none';
+        advantage = 'none';
+        advantageSelect.value = 'none';
+      }
     });
+  });
 
-    modifierInput.addEventListener('input', function(e) {
-      modifier = parseInt(e.target.value) || 0;
-    });
+  modifierInput.addEventListener('input', function(e) {
+    modifier = parseInt(e.target.value) || 0;
+  });
 
-    advantageSelect.addEventListener('change', function(e) {
-      advantage = e.target.value;
-    });
+  advantageSelect.addEventListener('change', function(e) {
+    advantage = e.target.value;
+  });
 
-    explodingCheck.addEventListener('change', function(e) {
-      exploding = e.target.checked;
-    });
+  explodingCheck.addEventListener('change', function(e) {
+    exploding = e.target.checked;
+  });
 
-    keepCountInput.addEventListener('input', function(e) {
-      keepCount = parseInt(e.target.value) || 1;
-      if (keepCount < 1) keepCount = 1;
-      e.target.value = keepCount;
-    });
+  keepCountInput.addEventListener('input', function(e) {
+    keepCount = parseInt(e.target.value) || 1;
+    if (keepCount < 1) keepCount = 1;
+    e.target.value = keepCount;
+  });
 
-    keepTypeSelect.addEventListener('change', function(e) {
-      keepType = e.target.value;
-    });
+  keepTypeSelect.addEventListener('change', function(e) {
+    keepType = e.target.value;
+  });
 
-    keepTotalInput.addEventListener('input', function(e) {
-      keepTotal = parseInt(e.target.value) || 2;
-      if (keepTotal < 2) keepTotal = 2;
-      e.target.value = keepTotal;
-    });
+  keepTotalInput.addEventListener('input', function(e) {
+    keepTotal = parseInt(e.target.value) || 2;
+    if (keepTotal < 2) keepTotal = 2;
+    e.target.value = keepTotal;
+  });
 
-    hiddenCheck.addEventListener('change', function(e) {
-      hiddenRoll = e.target.checked;
-    });
+  hiddenCheck.addEventListener('change', function(e) {
+    hiddenRoll = e.target.checked;
+  });
 
-    rollButton.addEventListener('click', function() {
-      performRoll();
-    });
+  rollButton.addEventListener('click', function() {
+    performRoll();
+  });
 
-    clearHistoryBtn.addEventListener('click', function() {
-      history.length = 0;
-      renderHistory();
-    });
-
+  clearHistoryBtn.addEventListener('click', function() {
+    history.length = 0;
     renderHistory();
-  }
+  });
 
   function randomDie(max) {
     return Math.floor(Math.random() * max) + 1;
@@ -290,11 +280,8 @@ body {
   }
 
   function performRoll() {
-    // Try to use OBR SDK for GM detection, but don't block on it
-    var useHidden = hiddenRoll;
-    
-    if (useHidden && window.OBR && window.OBR.player && typeof window.OBR.player.getPlayers === 'function') {
-      // Async check
+    // Try to detect GM via OBR SDK (if available), but don't block
+    if (hiddenRoll && typeof window.OBR !== 'undefined' && window.OBR.player && typeof window.OBR.player.getPlayers === 'function') {
       window.OBR.player.getPlayers().then(function(players) {
         var isGM = false;
         if (players && players.length > 0) {
@@ -310,8 +297,8 @@ body {
         executeRoll(false);
       });
     } else {
-      // No OBR, just do the roll (hidden will show ??? for non-GM, but since we can't detect, show result)
-      executeRoll(true); // Treat as GM if can't detect
+      // No hidden roll or OBR not available, just roll (show result)
+      executeRoll(true); // treat as if GM
     }
   }
 
@@ -416,4 +403,17 @@ body {
     var html = '';
     for (var i = 0; i < history.length; i++) {
       var e = history[i];
-      html += '<div class="history-item">
+      html += '<div class="history-item">';
+      if (e.hidden) html += '<span class="hidden-badge">[HIDDEN]</span> ';
+      html += '<span>' + e.timestamp + ' - ' + e.die + ': ' + e.detail + ' = <strong>' + e.total + '</strong></span>';
+      html += '</div>';
+    }
+    list.innerHTML = html;
+  }
+
+  // Initial render
+  renderHistory();
+});
+</script>
+</body>
+</html>
