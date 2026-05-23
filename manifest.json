@@ -1,12 +1,12 @@
 {
-  "name": "D&D Dice Engine",
+  "name": "D&D Dice Engine Minimal",
   "version": "1.0.0",
   "manifest_version": 1,
-  "description": "D&D 5e dice engine",
+  "description": "Minimal test dice roll",
   "author": "STCrafter",
   "icon": "/icon.svg",
   "action": {
-    "title": "Dice Engine",
+    "title": "Test Dice",
     "icon": "/icon.svg",
     "popover": "/index.html",
     "height": 600,
