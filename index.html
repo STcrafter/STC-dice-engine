@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>D&D Dice Engine</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="https://sdk.owlbear.rodeo/v2/index.js"></script>
+  <script type="module" src="main.js"></script>
+</head>
+<body>
+  <div id="app" class="v-card">
+    <h1 class="v-title">D&D Dice Engine</h1>
+    
+    <div class="dice-selection">
+      <label class="v-label">Choose Die:</label>
+      <div class="dice-buttons">
+        <button class="v-btn die-btn" data-die="4">d4</button>
+        <button class="v-btn die-btn" data-die="6">d6</button>
+        <button class="v-btn die-btn" data-die="8">d8</button>
+        <button class="v-btn die-btn" data-die="10">d10</button>
+        <button class="v-btn die-btn" data-die="12">d12</button>
+        <button class="v-btn die-btn" data-die="20">d20</button>
+        <button class="v-btn die-btn" data-die="100">d100</button>
+      </div>
+      <div class="selected-die">
+        <span id="current-die-display">d20</span>
+      </div>
+    </div>
+
+    <div class="modifiers">
+      <div class="mod-row">
+        <label for="modifier">Modifier:</label>
+        <input type="number" id="modifier" value="0" class="v-input">
+      </div>
+      <div class="mod-row" id="advantage-row">
+        <label>Advantage/Disadvantage:</label>
+        <select id="advantage-select" class="v-select">
+          <option value="none">None</option>
+          <option value="advantage">Advantage</option>
+          <option value="disadvantage">Disadvantage</option>
+        </select>
+      </div>
+      <div class="mod-row">
+        <label>
+          <input type="checkbox" id="exploding-check"> Exploding Dice
+        </label>
+      </div>
+      <div class="mod-row" id="keep-row">
+        <label for="keep-count">Keep Highest/Lowest:</label>
+        <input type="number" id="keep-count" value="1" min="1" class="v-input small-input">
+        <select id="keep-type" class="v-select small-select">
+          <option value="highest">Highest</option>
+          <option value="lowest">Lowest</option>
+        </select>
+        <span>of</span>
+        <input type="number" id="keep-total" value="2" min="2" class="v-input small-input">
+        <span>dice</span>
+      </div>
+      <div class="mod-row">
+        <label>
+          <input type="checkbox" id="hidden-roll-check"> Hidden Roll (GM only)
+        </label>
+      </div>
+    </div>
+
+    <div class="roll-section">
+      <button id="roll-button" class="v-btn roll-btn">Roll!</button>
+      <div id="result-display" class="v-stat result">
+        <span id="result-text">—</span>
+      </div>
+    </div>
+
+    <div class="history-section">
+      <h2 class="v-title">Roll History</h2>
+      <div id="history-list" class="history-list">
+        <p class="no-history">No rolls yet.</p>
+      </div>
+      <button id="clear-history" class="v-btn small">Clear History</button>
+    </div>
+  </div>
+</body>
+</html>
