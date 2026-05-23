@@ -135,6 +135,10 @@ body {
 
   <div class="modifiers">
     <div class="mod-row">
+      <label for="dice-count">Number of Dice:</label>
+      <input type="number" id="dice-count" value="1" min="1" class="v-input small-input">
+    </div>
+    <div class="mod-row">
       <label for="modifier">Modifier:</label>
       <input type="number" id="modifier" value="0" class="v-input">
     </div>
@@ -145,20 +149,6 @@ body {
         <option value="advantage">Advantage</option>
         <option value="disadvantage">Disadvantage</option>
       </select>
-    </div>
-    <div class="mod-row">
-      <label><input type="checkbox" id="exploding-check"> Exploding Dice</label>
-    </div>
-    <div class="mod-row" id="keep-row">
-      <label for="keep-count">Keep Highest/Lowest:</label>
-      <input type="number" id="keep-count" value="1" min="1" class="v-input small-input">
-      <select id="keep-type" class="v-select small-select">
-        <option value="highest">Highest</option>
-        <option value="lowest">Lowest</option>
-      </select>
-      <span>of</span>
-      <input type="number" id="keep-total" value="2" min="2" class="v-input small-input">
-      <span>dice</span>
     </div>
     <div class="mod-row">
       <label><input type="checkbox" id="hidden-roll-check"> Hidden Roll (GM only)</label>
@@ -183,23 +173,17 @@ body {
 document.addEventListener('DOMContentLoaded', function() {
   // State
   var selectedDie = 20;
+  var diceCount = 1;
   var modifier = 0;
   var advantage = 'none';
-  var exploding = false;
-  var keepTotal = 2;
-  var keepCount = 1;
-  var keepType = 'highest';
   var hiddenRoll = false;
   var history = [];
 
   // DOM elements
   var dieButtons = document.querySelectorAll('.die-btn');
+  var diceCountInput = document.getElementById('dice-count');
   var modifierInput = document.getElementById('modifier');
   var advantageSelect = document.getElementById('advantage-select');
-  var explodingCheck = document.getElementById('exploding-check');
-  var keepCountInput = document.getElementById('keep-count');
-  var keepTypeSelect = document.getElementById('keep-type');
-  var keepTotalInput = document.getElementById('keep-total');
   var hiddenCheck = document.getElementById('hidden-roll-check');
   var rollButton = document.getElementById('roll-button');
   var currentDieDisplay = document.getElementById('current-die-display');
@@ -208,6 +192,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   currentDieDisplay.textContent = 'd20';
 
+  // Die selection
   dieButtons.forEach(function(btn) {
     btn.addEventListener('click', function() {
       selectedDie = parseInt(btn.dataset.die);
@@ -222,32 +207,18 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 
+  diceCountInput.addEventListener('input', function(e) {
+    diceCount = parseInt(e.target.value) || 1;
+    if (diceCount < 1) diceCount = 1;
+    e.target.value = diceCount;
+  });
+
   modifierInput.addEventListener('input', function(e) {
     modifier = parseInt(e.target.value) || 0;
   });
 
   advantageSelect.addEventListener('change', function(e) {
     advantage = e.target.value;
-  });
-
-  explodingCheck.addEventListener('change', function(e) {
-    exploding = e.target.checked;
-  });
-
-  keepCountInput.addEventListener('input', function(e) {
-    keepCount = parseInt(e.target.value) || 1;
-    if (keepCount < 1) keepCount = 1;
-    e.target.value = keepCount;
-  });
-
-  keepTypeSelect.addEventListener('change', function(e) {
-    keepType = e.target.value;
-  });
-
-  keepTotalInput.addEventListener('input', function(e) {
-    keepTotal = parseInt(e.target.value) || 2;
-    if (keepTotal < 2) keepTotal = 2;
-    e.target.value = keepTotal;
   });
 
   hiddenCheck.addEventListener('change', function(e) {
@@ -267,20 +238,8 @@ document.addEventListener('DOMContentLoaded', function() {
     return Math.floor(Math.random() * max) + 1;
   }
 
-  function rollExplodingDie(max) {
-    var total = 0;
-    var parts = [];
-    while (true) {
-      var roll = randomDie(max);
-      parts.push(roll);
-      total += roll;
-      if (roll !== max) break;
-    }
-    return { value: total, parts: parts };
-  }
-
   function performRoll() {
-    // Try to detect GM via OBR SDK (if available), but don't block
+    // Try to detect GM via OBR SDK (if available)
     if (hiddenRoll && typeof window.OBR !== 'undefined' && window.OBR.player && typeof window.OBR.player.getPlayers === 'function') {
       window.OBR.player.getPlayers().then(function(players) {
         var isGM = false;
@@ -304,46 +263,24 @@ document.addEventListener('DOMContentLoaded', function() {
 
   function executeRoll(isGM) {
     try {
-      var totalRolls = 1;
+      var totalRolls = diceCount;
       var resultParts = [];
       var finalResult = 0;
 
+      // Handle advantage/disadvantage for d20 with exactly 1 die (override count)
       if (selectedDie === 20 && advantage !== 'none') {
-        totalRolls = 2;
-      }
-      if (keepTotal > 1 && keepCount > 0 && keepCount < keepTotal) {
-        totalRolls = keepTotal;
+        totalRolls = 2; // always 2 for adv/disadv
       }
 
       var rolls = [];
       for (var i = 0; i < totalRolls; i++) {
-        if (exploding) {
-          var rr = rollExplodingDie(selectedDie);
-          rolls.push(rr.value);
-          if (rr.parts.length > 1) {
-            resultParts.push('d' + selectedDie + ': ' + rr.parts.join(' + ') + ' = ' + rr.value);
-          } else {
-            resultParts.push('d' + selectedDie + ': ' + rr.value);
-          }
-        } else {
-          var r = randomDie(selectedDie);
-          rolls.push(r);
-          resultParts.push('d' + selectedDie + ': ' + r);
-        }
+        var r = randomDie(selectedDie);
+        rolls.push(r);
+        resultParts.push('d' + selectedDie + ': ' + r);
       }
 
-      if (totalRolls > 1 && keepCount > 0 && keepCount < rolls.length) {
-        var sorted = rolls.slice().sort(function(a, b) { return a - b; });
-        var kept;
-        if (keepType === 'highest') {
-          kept = sorted.slice(-keepCount);
-        } else {
-          kept = sorted.slice(0, keepCount);
-        }
-        var keptSum = kept.reduce(function(acc, v) { return acc + v; }, 0);
-        resultParts.push('Keep ' + keepType + ' ' + keepCount + ': [' + kept.join(', ') + '] = ' + keptSum);
-        finalResult = keptSum;
-      } else if (totalRolls === 2 && selectedDie === 20 && advantage !== 'none') {
+      if (selectedDie === 20 && advantage !== 'none') {
+        // Advantage/Disadvantage logic
         if (advantage === 'advantage') {
           finalResult = Math.max(rolls[0], rolls[1]);
           resultParts.push('Advantage: max = ' + finalResult);
@@ -352,6 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
           resultParts.push('Disadvantage: min = ' + finalResult);
         }
       } else {
+        // Sum all rolls (standard roll)
         finalResult = rolls.reduce(function(acc, v) { return acc + v; }, 0);
         if (rolls.length > 1) {
           resultParts.push('Sum: ' + finalResult);
@@ -374,7 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       var entry = {
         timestamp: new Date().toLocaleTimeString(),
-        die: 'd' + selectedDie,
+        die: 'd' + selectedDie + (totalRolls > 1 ? ' x' + totalRolls : ''),
         detail: resultParts.join(' | '),
         total: totalWithMod,
         hidden: hiddenRoll
@@ -411,7 +349,6 @@ document.addEventListener('DOMContentLoaded', function() {
     list.innerHTML = html;
   }
 
-  // Initial render
   renderHistory();
 });
 </script>
